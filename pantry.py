@@ -10,8 +10,7 @@ class Pantry:
         """Load the pantry from a JSON file."""
         try:
             with open(self.filename, "r") as file:
-                pantry = json.load(file)
-                return {item: int(quantity) for item, quantity in pantry.items()}  # Convert to integers
+                return json.load(file)
         except FileNotFoundError:
             print(f"\nNo saved pantry found. Starting fresh.")
             return {}

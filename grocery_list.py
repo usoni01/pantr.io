@@ -6,8 +6,9 @@ class GroceryList:
         """Generate a grocery list based on selected recipes and servings."""
         grocery_list = {}
         for category, recipes_in_category in recipes.items():
-            for recipe_name, ingredients in recipes_in_category.items():
+            for recipe_name, recipe_details in recipes_in_category.items():
                 if recipe_name in selected_recipes:
+                    ingredients = recipe_details["ingredients"]  # Access the ingredients key
                     for ingredient, quantity in ingredients.items():
                         if ingredient in grocery_list:
                             grocery_list[ingredient] += quantity * servings

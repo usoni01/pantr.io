@@ -1,4 +1,4 @@
-# Grocery List Generator
+# Pantr.io
 
 The Grocery List Generator is a web application that helps users manage their pantry, select recipes, and generate a grocery list based on the selected recipes and the number of servings. It consists of a **React frontend** and a **Flask backend**.
 
@@ -60,7 +60,7 @@ The Grocery List Generator is a web application that helps users manage their pa
     pythons app.py
   ```
 
-5. The backend will be available at http://127.0.0.1:5000.
+5. The backend will be available at `http://127.0.0.1:5000`.
 
 ### Frontend Setup
 

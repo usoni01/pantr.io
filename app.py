@@ -9,6 +9,31 @@ CORS(app)
 
 pantry = Pantry()
 
+# Mock user database
+users = {"testuser": "C00kb00k!23"}  # Replace with a real database in production
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if username in users and users[username] == password:
+        return jsonify({"message": "Login successful", "token": "mock-token"}), 200
+    return jsonify({"message": "Invalid credentials"}), 401
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if username in users:
+        return jsonify({"message": "User already exists"}), 400
+
+    users[username] = password
+    return jsonify({"message": "Signup successful"}), 201
+
 @app.route('/api/pantry', methods=['GET'])
 def get_pantry():
     return jsonify(pantry.pantry)
@@ -31,26 +56,28 @@ def get_recipes_by_category(category):
     else:
         return jsonify({"error": "Category not found"}), 404
 
+@app.route('/api/recipes/<category>/<recipe_name>', methods=['GET'])
+def get_recipe_details(category, recipe_name):
+    """Get detailed recipe information, including ingredients and steps."""
+    if category in recipes and recipe_name in recipes[category]:
+        return jsonify(recipes[category][recipe_name])
+    else:
+        return jsonify({"error": "Recipe not found"}), 404
+
 @app.route('/api/grocery-list', methods=['POST'])
 def generate_grocery_list():
     data = request.json
     selected_recipes = data['recipes']
     servings = data['servings']
 
-    # Generate grocery list by traversing subcategories
-    grocery_list = {}
-    for category, recipes_in_category in recipes.items():
-        for recipe_name, ingredients in recipes_in_category.items():
-            if recipe_name in selected_recipes:
-                for ingredient, quantity in ingredients.items():
-                    if ingredient in grocery_list:
-                        grocery_list[ingredient] += quantity * servings
-                    else:
-                        grocery_list[ingredient] = quantity * servings
-
+    # Generate grocery list using the updated structure
+    grocery_list = GroceryList.generate(selected_recipes, servings, recipes)
     needed_groceries = GroceryList.check_needed_groceries(grocery_list, pantry.pantry)
+
+    # Deduct used ingredients from the pantry
     pantry.deduct_from_pantry(grocery_list)
     pantry.save_pantry()
+
     return jsonify({
         "grocery_list": grocery_list,
         "needed_groceries": needed_groceries,

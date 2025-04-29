@@ -3,6 +3,8 @@ import axios from 'axios';
 import './theme.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authToken, setAuthToken] = useState(null);
   const [pantry, setPantry] = useState({});
   const [recipes, setRecipes] = useState({});
   const [selectedRecipes, setSelectedRecipes] = useState([]);
@@ -11,23 +13,26 @@ function App() {
   const [neededGroceries, setNeededGroceries] = useState([]);
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [newPantryItem, setNewPantryItem] = useState({ item: '', quantity: '' });
-  const [deliveryOption, setDeliveryOption] = useState('delivery'); // Default to delivery
+  const [deliveryOption, setDeliveryOption] = useState('delivery');
+  const [recipeSteps, setRecipeSteps] = useState([]);
+  const [recipeIngredients, setRecipeIngredients] = useState({}); // New state for ingredients
 
-  // Map main categories to images
   const categoryImages = {
     Pasta: '/assets/images/pasta.png',
     Salad: '/assets/images/salad.png',
     Sandwich: '/assets/images/sandwich.png',
     Soup: '/assets/images/soup.png',
-    Dessert: '/assets/images/cake.png',
+    Desserts: '/assets/images/cake.png',
     Drinks: '/assets/images/drink.png',
-    Omlette: '/assets/images/omelette.png',
+    Omelette: '/assets/images/omelette.png',
   };
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/api/pantry').then((res) => setPantry(res.data));
-    axios.get('http://127.0.0.1:5000/api/recipes').then((res) => setRecipes(res.data));
-  }, []);
+    if (isLoggedIn) {
+      axios.get('http://127.0.0.1:5000/api/pantry').then((res) => setPantry(res.data));
+      axios.get('http://127.0.0.1:5000/api/recipes').then((res) => setRecipes(res.data));
+    }
+  }, [isLoggedIn]);
 
   const handleGenerateGroceryList = () => {
     axios
@@ -42,11 +47,14 @@ function App() {
       });
   };
 
-  const toggleRecipeSelection = (recipe) => {
+  const toggleRecipeSelection = (recipe, category) => {
     if (selectedRecipes.includes(recipe)) {
       setSelectedRecipes(selectedRecipes.filter((r) => r !== recipe));
+      setRecipeSteps([]);
+      setRecipeIngredients({});
     } else {
       setSelectedRecipes([...selectedRecipes, recipe]);
+      fetchRecipeDetails(recipe, category);
     }
   };
 
@@ -68,17 +76,85 @@ function App() {
   };
 
   const handleSendToCart = () => {
-    // Simulate sending the grocery list to a store's cart
     alert(
       `Your grocery list has been sent to the cart for ${deliveryOption.toUpperCase()}!`
     );
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setAuthToken(null);
+  };
+
+  const fetchRecipeDetails = (recipeName, category) => {
+    axios
+      .get(`http://127.0.0.1:5000/api/recipes/${category}/${recipeName}`)
+      .then((res) => {
+        setRecipeSteps(res.data.steps);
+        setRecipeIngredients(res.data.ingredients); // Set ingredients for the selected recipe
+      })
+      .catch((err) => console.error('Error fetching recipe details:', err));
+  };
+
+  const LoginForm = ({ onLogin }) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleLogin = (e) => {
+      e.preventDefault();
+      axios
+        .post('http://127.0.0.1:5000/login', { username, password })
+        .then((res) => {
+          onLogin(res.data.token);
+        })
+        .catch(() => {
+          setError('Invalid username or password');
+        });
+    };
+
+    return (
+      <div className="login-container">
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {error && <p className="text-danger">{error}</p>}
+          <button type="submit" className="btn btn-primary w-100">
+            Login
+          </button>
+        </form>
+      </div>
+    );
+  };
+
+  if (!isLoggedIn) {
+    return <LoginForm onLogin={(token) => { setIsLoggedIn(true); setAuthToken(token); }} />;
+  }
+
   return (
     <div className="container mt-5">
       <h1 className="text-center mb-4">Pantr.io</h1>
+      <button className="btn btn-danger mb-3" onClick={handleLogout}>
+        Logout
+      </button>
 
-      {/* Horizontal Category Buttons */}
       <div className="d-flex justify-content-center mb-4">
         {Object.keys(categoryImages).map((category) => (
           <div
@@ -105,7 +181,7 @@ function App() {
 
       <div className="row">
         {/* Pantry Section */}
-        <div className="col-md-6 col-lg-4 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-body">
               <h2 className="card-title">Pantry</h2>
@@ -145,9 +221,9 @@ function App() {
           </div>
         </div>
 
-        {/* Recipes Section */}
-        <div className="col-md-6 col-lg-8 mb-4">
-          <div className="card shadow-sm">
+        {/* Recipes and Recipe Details */}
+        <div className="col-md-4 mb-4">
+          <div className="card shadow-sm mb-4">
             <div className="card-body">
               <h2 className="card-title">Recipes</h2>
               {expandedCategory && (
@@ -159,7 +235,7 @@ function App() {
                           className={`btn btn-outline-success ${
                             selectedRecipes.includes(recipe) ? 'active' : ''
                           }`}
-                          onClick={() => toggleRecipeSelection(recipe)}
+                          onClick={() => toggleRecipeSelection(recipe, expandedCategory)}
                         >
                           {recipe}
                         </button>
@@ -170,53 +246,59 @@ function App() {
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Servings Section */}
-      <div className="row">
-        <div className="col-md-6 col-lg-4 mb-4">
-          <div className="card shadow-sm">
+          {Object.keys(recipeIngredients).length > 0 && (
+            <div className="card shadow-sm mb-4">
+              <div className="card-body">
+                <h2 className="card-title">Ingredients</h2>
+                <ul>
+                  {Object.entries(recipeIngredients).map(([ingredient, quantity]) => (
+                    <li key={ingredient}>
+                      {ingredient}: {quantity}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {recipeSteps.length > 0 && (
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h2 className="card-title">Recipe Steps</h2>
+                <ol>
+                  {recipeSteps.map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Grocery Section */}
+        <div className="col-md-4 mb-4">
+          <div className="card shadow-sm mb-4">
             <div className="card-body">
-              <h2 className="card-title">Servings</h2>
+              <h2 className="card-title">Grocery List</h2>
               <input
                 type="number"
-                className="form-control shadow-sm"
+                className="form-control mb-2"
                 value={servings}
                 onChange={(e) => setServings(Number(e.target.value))}
                 min="1"
               />
-              <button className="btn btn-success mt-3 w-100 shadow-sm" onClick={handleGenerateGroceryList}>
+              <button className="btn btn-success mb-3 w-100" onClick={handleGenerateGroceryList}>
                 Generate Grocery List
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Grocery List Section */}
-        <div className="col-md-6 col-lg-4 mb-4">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h2 className="card-title">Grocery List</h2>
-              <ul className="list-group shadow-sm">
-                {Object.entries(groceryList).map(([item, quantity]) => (
-                  <li key={item} className="list-group-item d-flex justify-content-between align-items-center">
-                    {item}
-                    <span className="badge bg-success rounded-pill">{quantity}</span>
-                  </li>
-                ))}
-              </ul>
               
             </div>
           </div>
-        </div>
 
-        {/* Needed Groceries Section */}
-        <div className="col-md-6 col-lg-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-body">
               <h2 className="card-title">Needed Groceries</h2>
-              <ul className="list-group shadow-sm">
+              <ul className="list-group">
                 {Object.entries(neededGroceries).map(([item, quantity]) => (
                   <li key={item} className="list-group-item d-flex justify-content-between align-items-center">
                     {item}

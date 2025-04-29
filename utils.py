@@ -1,3 +1,13 @@
+import requests
+
+def login(username, password):
+    response = requests.post("http://127.0.0.1:5000/login", json={"username": username, "password": password})
+    if response.status_code == 200:
+        return response.json()["token"]
+    else:
+        raise ValueError("Invalid credentials")
+    
+    
 def format_quantity(quantity, item=None):
     """Convert quantities to more practical units based on rules."""
     if item:
