@@ -1,0 +1,25 @@
+/* Chips */
+.chip {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #e9c46a; /* Accent Yellow */
+    color: #2a9d8f; /* Forest Green */
+    border-radius: 20px;
+    border: 1px solid #bc6c25; /* Warm Brown */
+    cursor: default;
+  }
+  
+  .chip .badge {
+    background-color: #2a9d8f; /* Forest Green */
+    color: #f4f1de; /* Soft Beige */
+    margin-left: 5px;
+  }
+  
+  /* Active Button */
+  button.active {
+    background-color: #2a9d8f !important; /* Forest Green */
+    color: #f4f1de !important; /* Soft Beige */
+    border-color: #2a9d8f !important;
+  }
