@@ -1,7 +1,15 @@
+import os
+from dotenv import load_dotenv
 import requests
 
+# Load environment variables
+load_dotenv()
+
+# Example usage of environment variables
+API_URL = os.getenv("API_URL", "http://127.0.0.1:5000")
+
 def login(username, password):
-    response = requests.post("http://127.0.0.1:5000/login", json={"username": username, "password": password})
+    response = requests.post(f"{API_URL}/login", json={"username": username, "password": password})
     if response.status_code == 200:
         return response.json()["token"]
     else:

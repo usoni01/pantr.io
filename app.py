@@ -3,14 +3,33 @@ from flask_cors import CORS
 from pantry import Pantry
 from grocery_list import GroceryList
 from recipes import recipes
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_talisman import Talisman
 
 app = Flask(__name__)
 CORS(app)
 
+# Initialize rate limiter
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Add Content Security Policy (CSP) headers
+Talisman(app, content_security_policy={
+    'default-src': "'self'",
+    'img-src': "'self' data:",
+    'script-src': "'self' 'unsafe-inline'",
+    'style-src': "'self' 'unsafe-inline'"
+})
+
 pantry = Pantry()
 
-# Mock user database
-users = {"testuser": "C00kb00k!23"}  # Replace with a real database in production
+# Update user database to store hashed passwords
+users = {"testuser": generate_password_hash("C00kb00k!23")}  # Replace with a real database in production
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -18,7 +37,7 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    if username in users and users[username] == password:
+    if username in users and check_password_hash(users[username], password):
         return jsonify({"message": "Login successful", "token": "mock-token"}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
@@ -31,7 +50,8 @@ def signup():
     if username in users:
         return jsonify({"message": "User already exists"}), 400
 
-    users[username] = password
+    # Hash the password before storing it
+    users[username] = generate_password_hash(password)
     return jsonify({"message": "Signup successful"}), 201
 
 @app.route('/api/pantry', methods=['GET'])
@@ -83,6 +103,10 @@ def generate_grocery_list():
         "needed_groceries": needed_groceries,
         "updated_pantry": pantry.pantry
     })
+
+@app.errorhandler(500)
+def handle_internal_error(error):
+    return jsonify({"message": "An internal error occurred."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

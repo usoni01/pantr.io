@@ -1,0 +1,200 @@
+# Prompt to generate the Hypervelocity app
+
+# Description:
+# This app is a grocery list generator and pantry manager built using Flask for the backend and React for the frontend.
+# It allows users to manage their pantry, generate grocery lists based on selected recipes, and view recipe details.
+
+# Backend:
+# - Built with Flask.
+# - Includes user authentication with hashed passwords.
+# - Provides APIs for managing the pantry, retrieving recipes, and generating grocery lists.
+# - Implements rate limiting and Content Security Policy (CSP) headers for security.
+# - Stores pantry data in a JSON file.
+
+# Frontend:
+# - Built with React.
+# - Allows users to log in, view and update their pantry, browse recipes, and generate grocery lists.
+# - Displays recipe details, including ingredients and steps.
+# - Provides options for delivery or pickup of groceries.
+
+# File Structure:
+
+## Backend Files (src/backend)
+1. **`app.py`**
+   - Main Flask application file.
+   - Handles API endpoints, user authentication, rate limiting, and Content Security Policy (CSP).
+   - Required Functions:
+     - `login`: Authenticates users and returns a token.
+     - `signup`: Registers new users.
+     - `get_pantry`: Retrieves pantry data.
+     - `update_pantry`: Updates pantry data.
+     - `get_recipes`: Retrieves all recipes.
+     - `get_recipes_by_category`: Retrieves recipes by category.
+     - `get_recipe_details`: Retrieves detailed recipe information.
+     - `generate_grocery_list`: Generates a grocery list based on selected recipes and servings.
+
+2. **`pantry.py`**
+   - Manages pantry operations.
+   - Required Functions:
+     - `load_pantry`: Loads pantry data from a JSON file.
+     - `save_pantry`: Saves pantry data to a JSON file.
+     - `update_pantry`: Adds or updates items in the pantry.
+     - `deduct_from_pantry`: Deducts quantities of ingredients used from the pantry.
+
+3. **`grocery_list.py`**
+   - Handles grocery list generation and checks for needed groceries based on the pantry.
+   - Required Functions:
+     - `generate`: Generates a grocery list based on selected recipes and servings.
+     - `check_needed_groceries`: Checks which groceries are needed based on the pantry.
+
+4. **`recipes.py`**
+   - Contains recipe data categorized by type (e.g., Pasta, Salad, Sandwich, Soup, Omelette, Drinks, Dessert).
+   - Required Structure:
+     ```python
+     recipes = {
+         "Category": {
+             "Recipe Name": {
+                 "ingredients": {
+                     "ingredient1": quantity1,
+                     "ingredient2": quantity2,
+                     # ...additional ingredients...
+                 },
+                 "steps": [
+                     "Step 1 description.",
+                     "Step 2 description.",
+                     # ...additional steps...
+                 ],
+             },
+             # ...additional recipes...
+         },
+         # ...additional categories...
+     }
+     ```
+
+5. **`utils.py`**
+   - Utility functions for formatting quantities and handling API requests.
+   - Required Functions:
+     - `format_quantity`: Converts quantities to practical units based on rules.
+     - `login`: Handles API login requests.
+
+6. **`main.py`**
+   - Command-line interface for interacting with the app, including login, pantry updates, and recipe selection.
+   - Required Functions:
+     - `login`: Authenticates the user before proceeding.
+     - `main`: Main entry point for the CLI, allowing pantry updates, recipe selection, and grocery list generation.
+
+## Frontend Files (src/frontend)
+1. **`App.js`**
+   - Main React component.
+   - Manages state, user authentication, pantry, recipes, and grocery list.
+   - Required Functions:
+     - `handleGenerateGroceryList`: Generates a grocery list and updates the pantry.
+     - `toggleRecipeSelection`: Toggles recipe selection and fetches recipe details.
+     - `toggleCategory`: Toggles the visibility of recipe categories.
+     - `handlePantryUpdate`: Updates the pantry with new items or quantities.
+     - `handleSendToCart`: Sends the grocery list to the cart for delivery or pickup.
+     - `fetchRecipeDetails`: Fetches detailed recipe information, including ingredients and steps.
+
+2. **`index.html`**
+   - HTML template for the React app.
+
+3. **`theme.css`**
+   - CSS file for styling the React app.
+
+## Assets (src/frontend/public/assets/images)
+1. **Category Images**
+   - Description: Images for recipe categories (e.g., Pasta, Salad, Sandwich).
+   - Examples:
+     - `pasta.png`
+     - `salad.png`
+     - `sandwich.png`
+     - `soup.png`
+     - `cake.png`
+     - `drink.png`
+     - `omelette.png`
+
+   - Exact mapping for frontend:
+     ```javascript
+     const categoryImages = {
+       Pasta: '/assets/images/pasta.png',
+       Salad: '/assets/images/salad.png',
+       Sandwich: '/assets/images/sandwich.png',
+       Soup: '/assets/images/soup.png',
+       Desserts: '/assets/images/cake.png',
+       Drinks: '/assets/images/drink.png',
+       Omelette: '/assets/images/omelette.png',
+     };
+     ```
+
+## Configuration Files (src/backend)
+1. **`.env`**
+   - Environment variables for API URLs and other configurations.
+
+# Install Required Libraries for the Project
+
+## Backend Libraries
+1. Flask
+2. Flask-Cors
+3. Flask-Limiter
+4. Flask-Talisman
+5. Werkzeug
+6. python-dotenv
+
+## Frontend Libraries
+1. React
+2. Axios
+3. Bootstrap
+
+# Instructions to Set Up a Virtual Environment for Python
+
+## Create and Activate a Virtual Environment
+1. **Create a Virtual Environment**
+   Run the following command to create a virtual environment named `venv`:
+   ```bash
+   python3 -m venv venv
+   ```
+
+2. **Activate the Virtual Environment**
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+
+# Instructions to Install Libraries
+
+## Backend Installation
+Run the following command to install the required Python libraries:
+```bash
+pip install flask flask-cors flask-limiter flask-talisman werkzeug python-dotenv
+```
+
+## Frontend Installation
+Navigate to the `grocery-app` directory and run the following command to install the required Node.js libraries:
+```bash
+npm install react axios bootstrap
+```
+
+# Instructions to generate the app:
+# 1. Create a Flask backend with the following endpoints:
+#    - POST /login: Authenticate users.
+#    - POST /signup: Register new users.
+#    - GET /api/pantry: Retrieve the pantry data.
+#    - POST /api/pantry: Update the pantry data.
+#    - GET /api/recipes: Retrieve all recipes.
+#    - GET /api/recipes/<category>: Retrieve recipes by category.
+#    - GET /api/recipes/<category>/<recipe_name>: Retrieve detailed recipe information.
+#    - POST /api/grocery-list: Generate a grocery list based on selected recipes and servings.
+# 2. Implement rate limiting and CSP headers in the Flask app.
+# 3. Create a React frontend with the following features:
+#    - Login and signup forms.
+#    - Pantry management interface.
+#    - Recipe browsing and selection interface.
+#    - Grocery list generation and display.
+#    - Recipe details display, including ingredients and steps.
+#    - Delivery or pickup option for groceries.
+# 4. Use the provided Python and JavaScript code as a reference for implementation.
+# 5. Ensure the app is secure, user-friendly, and responsive.
