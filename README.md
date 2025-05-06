@@ -7,9 +7,19 @@ The Grocery List Generator is a web application that helps users manage their pa
 ## App
 
 ### App After Login
+
+- Users can review their pantry, and update it
+- Users can select from different category of lists
+- Users can choose serving number
+
 ![App After Login](images/app.png)
 
 ### Grocery List Generation
+
+- Generates grocery list based on user's selection
+- Takes into account for what was already in their pantry
+- Can send the required list to cart
+
 ![Grocery List Generation](images/generate_list.png)
 
 ---
