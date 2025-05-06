@@ -4,6 +4,16 @@ The Grocery List Generator is a web application that helps users manage their pa
 
 ---
 
+## App
+
+### App After Login
+![App After Login](images/app.png)
+
+### Grocery List Generation
+![Grocery List Generation](images/generate_list.png)
+
+---
+
 ## Features
 
 - **Pantry Management**:
@@ -106,6 +116,8 @@ The Grocery List Generator is a web application that helps users manage their pa
 3. ***Specify Servings:*** Enter the number of servings to scale the ingredient quantities.
 
 4. ***Generate Grocery List:*** Click the "Generate Grocery List" button to view the grocery list and needed groceries.
+
+---
 
 ### Future Enhancements
 
